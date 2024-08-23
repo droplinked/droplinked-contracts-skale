@@ -1,50 +1,51 @@
 {
-    "name": "droplinked-contracts-v2",
-    "version": "1.0.0",
-    "description": "droplinked contracts refactored",
-    "main": "index.js",
-    "scripts": {
-        "compile": "npx hardhat compile",
-        "test": "npx hardhat test",
-        "deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet",
-        "deploy:ethereum": "npx hardhat run deploy/deploy.ts --network ethereumMainnet",
-        "deploy:bsc": "npx hardhat run deploy/deploy.ts --network bsc",
-        "deploy:base": "npx hardhat run deploy/deploy.ts --network base",
-        "deploy:linea": "npx hardhat run deploy/deploy.ts --network linea",
-        "deploy:polygon": "npx hardhat run deploy/deploy.ts --network polygon",
-        "deploy:bedi": "npx hardhat run deploy/deployBedi.ts --network base"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/droplinked/droplinked-contracts-v2.git"
-    },
-    "keywords": [
-        "droplinked",
-        "blockchain",
-        "smart",
-        "contracts",
-        "solidity"
-    ],
-    "author": "k3rn3lpanic",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/droplinked/droplinked-contracts-v2/issues"
-    },
-    "homepage": "https://github.com/droplinked/droplinked-contracts-v2#readme",
-    "devDependencies": {
-        "@nomicfoundation/hardhat-toolbox": "5.0.0",
-        "hardhat": "^2.22.1"
-    },
-    "dependencies": {
-        "@chainlink/contracts": "^0.6.1",
-        "@nomicfoundation/edr-win32-x64-msvc": "^0.3.2",
-        "@nomicfoundation/hardhat-ethers": "^3.0.5",
-        "@openzeppelin/contracts": "^5.0.0",
-        "@openzeppelin/contracts-upgradeable": "^5.0.2",
-        "@openzeppelin/hardhat-upgrades": "^3.1.0",
-        "@uniswap/v3-periphery": "^1.4.4",
-        "dotenv": "^16.4.5",
-        "hardhat-interface-generator": "^0.0.6",
-        "prompt-sync": "^4.2.0"
-    }
+	"name": "droplinked-contracts-v2",
+	"version": "1.0.0",
+	"description": "droplinked contracts refactored",
+	"main": "index.js",
+	"scripts": {
+		"compile": "npx hardhat compile",
+		"test": "npx hardhat test",
+		"deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet",
+		"deploy:ethereum": "npx hardhat run deploy/deploy.ts --network ethereumMainnet",
+		"deploy:bsc": "npx hardhat run deploy/deploy.ts --network bsc",
+		"deploy:base": "npx hardhat run deploy/deploy.ts --network base",
+		"deploy:calypsoTestnet": "npx hardhat run deploy/deploy.ts --network calypsoHubTestnet",
+		"deploy:linea": "npx hardhat run deploy/deploy.ts --network linea",
+		"deploy:polygon": "npx hardhat run deploy/deploy.ts --network polygon",
+		"deploy:bedi": "npx hardhat run deploy/deployBedi.ts --network base"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/droplinked/droplinked-contracts-v2.git"
+	},
+	"keywords": [
+		"droplinked",
+		"blockchain",
+		"smart",
+		"contracts",
+		"solidity"
+	],
+	"author": "k3rn3lpanic",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/droplinked/droplinked-contracts-v2/issues"
+	},
+	"homepage": "https://github.com/droplinked/droplinked-contracts-v2#readme",
+	"devDependencies": {
+		"@nomicfoundation/hardhat-toolbox": "5.0.0",
+		"hardhat": "^2.22.1"
+	},
+	"dependencies": {
+		"@chainlink/contracts": "^0.6.1",
+		"@nomicfoundation/edr-win32-x64-msvc": "^0.3.2",
+		"@nomicfoundation/hardhat-ethers": "^3.0.5",
+		"@openzeppelin/contracts": "^5.0.0",
+		"@openzeppelin/contracts-upgradeable": "^5.0.2",
+		"@openzeppelin/hardhat-upgrades": "^3.1.0",
+		"@uniswap/v3-periphery": "^1.4.4",
+		"dotenv": "^16.4.5",
+		"hardhat-interface-generator": "^0.0.6",
+		"prompt-sync": "^4.2.0"
+	}
 }
