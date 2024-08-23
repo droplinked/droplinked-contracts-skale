@@ -10,16 +10,14 @@ interface IShopPayment {
     function purchaseProduct(
         uint256 id,
         bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
+        uint256 amount
     ) external payable;
 
     function purchaseProductFor(
         address receiver,
         uint256 id,
         bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
+        uint256 amount
     ) external payable;
 
     function getProduct(
@@ -28,21 +26,6 @@ interface IShopPayment {
     function getProductViaAffiliateId(
         uint256 affiliateId
     ) external view returns (Product memory);
-}
-
-interface AggregatorV3Interface {
-    function getRoundData(
-        uint80 _roundId
-    )
-        external
-        view
-        returns (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        );
 }
 
 /**
@@ -54,54 +37,9 @@ contract DroplinkedPaymentProxy is Ownable {
     /// @dev Error for reporting outdated price data.
     error oldPrice(uint256 priceTimestamp, uint256 currentTimestamp);
 
-    /// @notice Time window for considering price data valid.
-    uint public heartBeat;
-
-    /// @notice Emitted when heartBeat is changed.
-    event HeartBeatChanged(uint newHeartBeat);
-
-    AggregatorV3Interface internal priceFeed;
-
     event ProductPurchased(string memo);
 
-    constructor(
-        uint256 _heartBeat,
-        address _chainLinkProvider
-    ) Ownable(msg.sender) {
-        heartBeat = _heartBeat;
-        priceFeed = AggregatorV3Interface(_chainLinkProvider);
-    }
-
-    /// @param _heartBeat The new heartBeat to set.
-    function changeHeartBeat(uint _heartBeat) external onlyOwner {
-        heartBeat = _heartBeat;
-        emit HeartBeatChanged(_heartBeat);
-    }
-
-    /**
-     * @dev Retrieves the latest price and its timestamp from the Chainlink Oracle.
-     * @param roundId The round ID to fetch the price from.
-     * @return price The price of the asset.
-     * @return timestamp The timestamp when the price was recorded.
-     */
-    function getLatestPrice(uint80 roundId) internal view returns (uint, uint) {
-        (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
-            roundId
-        );
-        if (price == 0) {
-            revert(
-                string(
-                    abi.encodePacked(
-                        "Invalid price or outdated timestamp. Price timestamp: ",
-                        timestamp,
-                        ", Current timestamp: ",
-                        block.timestamp
-                    )
-                )
-            );
-        }
-        return (uint(price), timestamp);
-    }
+    constructor() Ownable(msg.sender) {}
 
     /**
      * @dev Converts the given value to the native price using the provided ratio.
@@ -156,25 +94,17 @@ contract DroplinkedPaymentProxy is Ownable {
      * @param tbdReceivers Receivers of the payments.
      * @param cartItems List of items being purchased.
      * @param currency The currency used for the purchase.
-     * @param roundId The Chainlink round ID for price data.
      */
     function droplinkedPurchase(
         uint[] memory tbdValues,
         address[] memory tbdReceivers,
         PurchaseData[] memory cartItems,
         address currency,
-        uint80 roundId,
         string memory memo
     ) public payable {
         uint ratio = 0;
         if (currency == address(0)) {
-            uint256 timestamp;
-            (ratio, timestamp) = getLatestPrice(roundId);
-            if (ratio == 0) revert("Chainlink Contract not found");
-            if (
-                block.timestamp > timestamp &&
-                block.timestamp - timestamp > 2 * heartBeat
-            ) revert oldPrice(timestamp, block.timestamp);
+            revert("Native currency is not supported on skale");
         }
         transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
         // note: we can't have multiple products with different payment methods in the same purchase!
@@ -202,7 +132,6 @@ contract DroplinkedPaymentProxy is Ownable {
                 id,
                 isAffiliate,
                 amount,
-                roundId,
                 shopAddress,
                 currency
             );
@@ -246,7 +175,6 @@ contract DroplinkedPaymentProxy is Ownable {
         uint id,
         bool isAffiliate,
         uint amount,
-        uint80 roundId,
         address shopAddress,
         address currency
     ) private {
@@ -255,16 +183,14 @@ contract DroplinkedPaymentProxy is Ownable {
                 msg.sender,
                 id,
                 isAffiliate,
-                amount,
-                roundId
+                amount
             );
         } else {
             IShopPayment(shopAddress).purchaseProductFor(
                 msg.sender,
                 id,
                 isAffiliate,
-                amount,
-                roundId
+                amount
             );
         }
     }

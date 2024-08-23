@@ -13,20 +13,20 @@ import "../base/IDropShop.sol";
 contract DropShopDeployer is Initializable, OwnableUpgradeable {
     event ShopDeployed(address shop, address nftContract);
     event DroplinkedFeeUpdated(uint256 newFee);
-    event HeartBeatUpdated(uint256 newHeartBeat);
 
     IDropShop[] public shopAddresses;
     address[] public nftContracts;
     mapping(address shopOwner => address[] shops) public shopOwners;
     mapping(address shopOwner => address[] nftContracts) public nftOwners;
     uint256 public droplinkedFee;
-    uint256 public heartBeat;
     address public droplinkedWallet;
     uint public shopCount;
 
-    function initialize(uint256 _heartBeat, address _droplinkedWallet, uint256 _droplinkedFee) public initializer {
+    function initialize(
+        address _droplinkedWallet,
+        uint256 _droplinkedFee
+    ) public initializer {
         __Ownable_init(msg.sender);
-        heartBeat = _heartBeat;
         droplinkedWallet = _droplinkedWallet;
         droplinkedFee = _droplinkedFee;
     }
@@ -36,18 +36,19 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
         emit DroplinkedFeeUpdated(newFee);
     }
 
-    function setHeartBeat(uint256 newHeartBeat) external onlyOwner {
-        heartBeat = newHeartBeat;
-        emit HeartBeatUpdated(newHeartBeat);
-    }
-
     function deployShop(
-        bytes memory bytecode, bytes32 salt
+        bytes memory bytecode,
+        bytes32 salt
     ) external returns (address shop, address nftContract) {
         address deployedShop;
         IDropShop _shop;
         assembly {
-            deployedShop := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+            deployedShop := create2(
+                0,
+                add(bytecode, 0x20),
+                mload(bytecode),
+                salt
+            )
             if iszero(extcodesize(deployedShop)) {
                 revert(0, 0)
             }
@@ -66,9 +67,5 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
 
     function getDroplinkedFee() external view returns (uint256) {
         return droplinkedFee;
-    }
-
-    function getHeartBeat() external view returns (uint256) {
-        return heartBeat;
     }
 }

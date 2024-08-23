@@ -12,23 +12,7 @@ import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
-    function getHeartBeat() external view returns (uint256);
     function droplinkedWallet() external view returns (address);
-}
-
-interface AggregatorV3Interface {
-    function getRoundData(
-        uint80 _roundId
-    )
-        external
-        view
-        returns (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        );
 }
 
 interface DroplinkedToken1155 {
@@ -59,7 +43,6 @@ contract DropShop is
     uint256 public productCount;
     uint256 public affiliateRequestCount;
     Deployer public deployer;
-    AggregatorV3Interface internal priceFeed;
 
     modifier notRequested(uint256 productId, address requester) {
         if (isRequestSubmited[productId][requester])
@@ -104,15 +87,13 @@ contract DropShop is
         address _shopOwner,
         string memory _shopLogo,
         string memory _shopDescription,
-        address _deployer,
-        address _chainLink
+        address _deployer
     ) Ownable(_shopOwner) {
         _shopInfo.shopName = _shopName;
         _shopInfo.shopAddress = _shopAddress;
         _shopInfo.shopOwner = _shopOwner;
         _shopInfo.shopLogo = _shopLogo;
         _shopInfo.shopDescription = _shopDescription;
-        priceFeed = AggregatorV3Interface(_chainLink);
         deployer = Deployer(_deployer);
     }
 
@@ -403,13 +384,6 @@ contract DropShop is
         return affiliateRequestCount;
     }
 
-    function getLatestPrice(uint80 roundId) internal view returns (uint, uint) {
-        (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
-            roundId
-        );
-        return (uint(price), timestamp);
-    }
-
     function paymentHelper(
         address from,
         address to,
@@ -483,8 +457,7 @@ contract DropShop is
         address receiver,
         uint256 id,
         bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
+        uint256 amount
     ) public payable {
         address publisher = address(0);
         Product memory product;
@@ -525,16 +498,6 @@ contract DropShop is
         uint256 finalPrice = product.paymentInfo.price;
         uint256 ratio = 0;
         uint256 fee = deployer.getDroplinkedFee();
-        if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
-            uint256 timestamp;
-            (ratio, timestamp) = getLatestPrice(roundId);
-            if (ratio == 0) revert("Chainlink Contract not found");
-            if (
-                block.timestamp > timestamp &&
-                block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())
-            ) revert oldPrice();
-            finalPrice = toNativePrice(product.paymentInfo.price, ratio);
-        }
         finalPrice = finalPrice * amount;
         Issuer memory issuer = DroplinkedToken1155(product.nftAddress).issuers(
             product.tokenId
@@ -573,10 +536,9 @@ contract DropShop is
     function purchaseProduct(
         uint256 id,
         bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
+        uint256 amount
     ) public payable {
-        purchaseProductFor(msg.sender, id, isAffiliate, amount, roundId);
+        purchaseProductFor(msg.sender, id, isAffiliate, amount);
     }
 
     function onERC721Received(

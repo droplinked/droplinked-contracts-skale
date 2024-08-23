@@ -53,8 +53,6 @@ interface IDIP1 {
         uint256 amount
     );
 
-
-
     function getShopName() external view returns (string memory);
     function getShopAddress() external view returns (string memory);
     function getShopOwner() external view returns (address);
@@ -98,13 +96,11 @@ interface IDIP1 {
         address receiver,
         uint256 id,
         bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
+        uint256 amount
     ) external payable;
     function purchaseProduct(
         uint256 id,
         bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
+        uint256 amount
     ) external payable;
 }
