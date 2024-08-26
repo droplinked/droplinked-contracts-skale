@@ -6,15 +6,15 @@ This repository contains the droplinked's smart-contract source code for EVM cha
 Use the .env.example file to build your own .env file before compiling/deploying onchain
 
 ## Deploy
-To deploy the contract to a network, follow these steps:
+To deploy the droplinked contracts to a network, follow these steps:
 
-Add your network to the `hardhat.config.ts` file, by simply looking at the exapmles that are there
+* Add your network to the `hardhat.config.ts` file, by simply looking at the exapmles that are there
 
-Put your etherscan/blockscout `api key` in the etherscan part
+* Put your etherscan/blockscout `api key` in the etherscan part
 
-Run the following command to deploy :
+* Run the following command to deploy :
 
-`npx hardhat run scripts/deploy.ts --network $network_name_here$`
+  `npx hardhat run scripts/deploy.ts --network $network_name_here$`
 
 For instance, running
 
