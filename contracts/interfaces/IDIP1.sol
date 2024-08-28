@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
 interface IDIP1 {
     error AlreadyRequested(address requester, uint256 productId);
@@ -12,6 +12,8 @@ interface IDIP1 {
     error ProductExists(uint256 productId);
     error oldPrice();
     error AffiliatePOD();
+    error StringSizeLimit();
+    error NativePricingNotSupported();
     error NotEnoughTokens(uint256 tokenId, address producer);
     error ShopDoesNotOwnToken(uint256 tokenId, address nftAddress);
 
@@ -73,16 +75,17 @@ interface IDIP1 {
         uint256 productId
     ) external view returns (PaymentInfo memory);
     function registerProduct(
-        uint256 _tokenId,
-        address _nftAddress,
-        uint256 _affiliatePercentage,
-        uint256 _price,
-        address _currencyAddress,
-        NFTType _nftType,
-        ProductType _productType,
-        PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries,
-        bool _recieveUSDC
+        uint256 tokenId,
+        address nftAddress,
+        uint256 affiliatePercentage,
+        uint256 price,
+        address currencyAddress,
+        uint256 amount,
+        NFTType nftType,
+        ProductType productType,
+        PaymentMethodType paymentType,
+        Beneficiary[] memory beneficiaries,
+        bool recieveUSDC
     ) external returns (uint256);
     function unregisterProduct(uint256 productId) external;
     function requestAffiliate(uint256 productId) external returns (uint256);

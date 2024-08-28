@@ -28,6 +28,7 @@ struct PaymentInfo {
 
 struct Product {
     uint256 tokenId;
+    uint256 remainingAmount;
     address nftAddress;
     NFTType nftType;
     ProductType productType;
@@ -57,28 +58,28 @@ enum ProductType {
 
 struct Issuer {
     address issuer;
-    uint royalty;
+    uint256 royalty;
 }
 
 struct PurchaseData {
-    uint id;
-    uint amount;
+    uint256 id;
+    uint256 amount;
     bool isAffiliate;
     address shopAddress;
 }
 
 struct RecordData {
-    address _nftAddress;
-    string _uri;
-    uint256 _amount;
-    bool _accepted;
-    uint256 _affiliatePercentage;
-    uint256 _price;
-    address _currencyAddress;
-    uint256 _royalty;
-    NFTType _nftType;
-    ProductType _productType;
-    PaymentMethodType _paymentType;
-    Beneficiary[] _beneficiaries;
-    bool _receiveUSDC;
+    address nftAddress;
+    string uri;
+    uint256 amount;
+    bool accepted;
+    uint256 affiliatePercentage;
+    uint256 price;
+    address currencyAddress;
+    uint256 royalty;
+    NFTType nftType;
+    ProductType productType;
+    PaymentMethodType paymentType;
+    Beneficiary[] beneficiaries;
+    bool receiveUSDC;
 }

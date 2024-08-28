@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
 interface IShopPayment {
     function purchaseProduct(

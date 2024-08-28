@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
 contract BenficiaryManager {
     mapping(uint => Beneficiary) public beneficiaries;

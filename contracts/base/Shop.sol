@@ -33,9 +33,10 @@ contract DropShop is
     IERC721Receiver,
     IERC1155Receiver
 {
+    uint256 constant MAX_STRING_LENGTH = 450;
     bool private receivedProduct;
     ShopInfo public _shopInfo;
-    mapping(uint256 productId => Product product) public products;
+    mapping(uint256 productId => Product) public products;
     mapping(uint256 productId => mapping(address requester => bool))
         public isRequestSubmited;
     mapping(uint256 requestId => AffiliateRequest affiliateRequest)
@@ -81,6 +82,11 @@ contract DropShop is
         _;
     }
 
+    modifier checkStringSize(string memory input) {
+        if (bytes(input).length > MAX_STRING_LENGTH) revert StringSizeLimit();
+        _;
+    }
+
     constructor(
         string memory _shopName,
         string memory _shopAddress,
@@ -88,7 +94,13 @@ contract DropShop is
         string memory _shopLogo,
         string memory _shopDescription,
         address _deployer
-    ) Ownable(_shopOwner) {
+    )
+        Ownable(_shopOwner)
+        checkStringSize(_shopName)
+        checkStringSize(_shopAddress)
+        checkStringSize(_shopLogo)
+        checkStringSize(_shopDescription)
+    {
         _shopInfo.shopName = _shopName;
         _shopInfo.shopAddress = _shopAddress;
         _shopInfo.shopOwner = _shopOwner;
@@ -103,6 +115,7 @@ contract DropShop is
         uint256 _affiliatePercentage,
         uint256 _price,
         address _currencyAddress,
+        uint256 _amount,
         NFTType _nftType,
         ProductType _productType,
         PaymentMethodType _paymentType,
@@ -122,6 +135,7 @@ contract DropShop is
         );
         Product memory result = Product(
             _tokenId,
+            _amount,
             _nftAddress,
             _nftType,
             _productType,
@@ -198,88 +212,82 @@ contract DropShop is
     function mintAndRegister(
         RecordData memory mintData
     ) public onlyOwner returns (uint256 productId) {
-        uint _tokenId = DroplinkedToken1155(mintData._nftAddress).mint(
-            mintData._uri,
-            mintData._amount,
+        uint _tokenId = DroplinkedToken1155(mintData.nftAddress).mint(
+            mintData.uri,
+            mintData.amount,
             msg.sender,
-            mintData._royalty,
-            mintData._accepted
+            mintData.royalty,
+            mintData.accepted
         );
 
         // register the product
         uint registeredProductId = registerProduct(
             _tokenId,
-            mintData._nftAddress,
-            mintData._affiliatePercentage,
-            mintData._price,
-            mintData._currencyAddress,
-            mintData._nftType,
-            mintData._productType,
-            mintData._paymentType,
-            mintData._beneficiaries,
-            mintData._receiveUSDC
+            mintData.nftAddress,
+            mintData.affiliatePercentage,
+            mintData.price,
+            mintData.currencyAddress,
+            mintData.amount,
+            mintData.nftType,
+            mintData.productType,
+            mintData.paymentType,
+            mintData.beneficiaries,
+            mintData.receiveUSDC
         );
 
         emit ProductMinted(
             registeredProductId,
-            mintData._amount,
+            mintData.amount,
             msg.sender,
-            mintData._uri
+            mintData.uri
         );
         return registeredProductId;
     }
 
     function registerProduct(
-        uint256 _tokenId,
-        address _nftAddress,
-        uint256 _affiliatePercentage,
-        uint256 _price,
-        address _currencyAddress,
-        NFTType _nftType,
-        ProductType _productType,
-        PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries,
-        bool _receiveUSDC
+        uint256 tokenId,
+        address nftAddress,
+        uint256 affiliatePercentage,
+        uint256 price,
+        address currencyAddress,
+        uint256 amount,
+        NFTType nftType,
+        ProductType productType,
+        PaymentMethodType paymentType,
+        Beneficiary[] memory beneficiaries,
+        bool receiveUSDC
     ) public onlyOwner returns (uint256) {
-        uint256 amount = 0;
         Product memory __product = constructProduct(
-            _tokenId,
-            _nftAddress,
-            _affiliatePercentage,
-            _price,
-            _currencyAddress,
-            _nftType,
-            _productType,
-            _paymentType,
-            _beneficiaries,
-            _receiveUSDC
+            tokenId,
+            nftAddress,
+            affiliatePercentage,
+            price,
+            currencyAddress,
+            amount,
+            nftType,
+            productType,
+            paymentType,
+            beneficiaries,
+            receiveUSDC
         );
         uint256 _productId = getProductId(__product);
         if (products[_productId].nftAddress != address(0)) {
             // Product exists, we just want to add more to it
-            if (_nftType == NFTType.ERC721) {
+            if (nftType == NFTType.ERC721) {
                 receivedProduct = false;
-                amount = 1;
                 IERC721(__product.nftAddress).safeTransferFrom(
                     msg.sender,
                     address(this),
-                    _tokenId
+                    tokenId
                 );
                 if (!receivedProduct) revert("NFT not received");
-            } else if (_nftType == NFTType.ERC1155) {
+            } else if (nftType == NFTType.ERC1155) {
                 receivedProduct = false;
-                amount = IERC1155(__product.nftAddress).balanceOf(
-                    msg.sender,
-                    _tokenId
-                );
                 IERC1155(__product.nftAddress).safeTransferFrom(
                     msg.sender,
                     address(this),
-                    _tokenId,
-                    IERC1155(__product.nftAddress).balanceOf(
-                        msg.sender,
-                        _tokenId
-                    ),
+                    tokenId,
+                    amount,
                     ""
                 );
                 if (!receivedProduct) revert("NFT not received");
@@ -290,26 +298,21 @@ contract DropShop is
 
         products[_productId] = __product;
         productCount++;
-        if (_nftType == NFTType.ERC721) {
-            amount = 1;
+        if (nftType == NFTType.ERC721) {
             receivedProduct = false;
             IERC721(__product.nftAddress).safeTransferFrom(
                 msg.sender,
                 address(this),
-                _tokenId
+                tokenId
             );
             if (!receivedProduct) revert("NFT not received");
-        } else if (_nftType == NFTType.ERC1155) {
+        } else if (nftType == NFTType.ERC1155) {
             receivedProduct = false;
-            amount = IERC1155(__product.nftAddress).balanceOf(
-                msg.sender,
-                _tokenId
-            );
             IERC1155(__product.nftAddress).safeTransferFrom(
                 msg.sender,
                 address(this),
-                _tokenId,
-                IERC1155(__product.nftAddress).balanceOf(msg.sender, _tokenId),
+                tokenId,
+                amount,
                 ""
             );
             if (!receivedProduct) revert("NFT not received");
@@ -322,12 +325,22 @@ contract DropShop is
         uint256 productId
     ) external productExists(productId) onlyOwner {
         Product memory product = products[productId];
-        IERC721(product.nftAddress).safeTransferFrom(
-            address(this),
-            msg.sender,
-            product.tokenId,
-            ""
-        );
+        if (product.nftType == NFTType.ERC721) {
+            IERC721(product.nftAddress).safeTransferFrom(
+                address(this),
+                msg.sender,
+                product.tokenId,
+                ""
+            );
+        } else if (product.nftType == NFTType.ERC1155) {
+            IERC1155(product.nftAddress).safeTransferFrom(
+                address(this),
+                msg.sender,
+                product.tokenId,
+                product.remainingAmount,
+                ""
+            );
+        }
         delete products[productId];
         emit ProductUnregistered(productId, msg.sender);
     }
@@ -394,7 +407,7 @@ contract DropShop is
             product.paymentInfo.paymentType == PaymentMethodType.USD ||
             product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN
         ) {
-            payable(to).transfer(amount);
+            revert NativePricingNotSupported();
         } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
             IERC20(product.paymentInfo.currencyAddress).transferFrom(
                 from,
