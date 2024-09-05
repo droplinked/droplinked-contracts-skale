@@ -149,14 +149,23 @@ contract DropShop is
         Product memory product
     ) public pure returns (uint256) {
         return
-            uint256(keccak256(abi.encode(product.nftAddress, product.tokenId)));
+            uint256(
+                keccak256(
+                    abi.encode(
+                        product.nftAddress,
+                        product.tokenId,
+                        product.remainingAmount
+                    )
+                )
+            );
     }
 
     function getProductIdV2(
         address nftAddress,
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 remainingAmount
     ) public pure returns (uint256) {
-        return uint256(keccak256(abi.encode(nftAddress, tokenId)));
+        return uint256(keccak256(abi.encode(nftAddress, tokenId, remainingAmount)));
     }
 
     function getShopName() external view returns (string memory) {
@@ -235,7 +244,7 @@ contract DropShop is
             mintData.receiveUSDC
         );
 
-        emit ProductMinted(
+        emit ProductRegistered(
             registeredProductId,
             mintData.amount,
             msg.sender,
@@ -272,28 +281,7 @@ contract DropShop is
         );
         uint256 _productId = getProductId(__product);
         if (products[_productId].nftAddress != address(0)) {
-            // Product exists, we just want to add more to it
-            if (nftType == NFTType.ERC721) {
-                receivedProduct = false;
-                IERC721(__product.nftAddress).safeTransferFrom(
-                    msg.sender,
-                    address(this),
-                    tokenId
-                );
-                if (!receivedProduct) revert("NFT not received");
-            } else if (nftType == NFTType.ERC1155) {
-                receivedProduct = false;
-                IERC1155(__product.nftAddress).safeTransferFrom(
-                    msg.sender,
-                    address(this),
-                    tokenId,
-                    amount,
-                    ""
-                );
-                if (!receivedProduct) revert("NFT not received");
-            }
-            emit ProductRegistered(_productId, amount, msg.sender);
-            return _productId;
+            revert "Product exists";
         }
 
         products[_productId] = __product;
@@ -317,7 +305,6 @@ contract DropShop is
             );
             if (!receivedProduct) revert("NFT not received");
         }
-        emit ProductRegistered(_productId, amount, msg.sender);
         return _productId;
     }
 
@@ -495,6 +482,11 @@ contract DropShop is
                 amount,
                 ""
             );
+            product.remainingAmount = IERC1155(product.nftAddress).balanceOf(
+                    address(this),
+                    product.tokenId
+                );
+            
         } else {
             if (amount != 1) revert("Invalid amount");
             if (
@@ -507,6 +499,7 @@ contract DropShop is
                 product.tokenId,
                 ""
             );
+            product.remainingAmount = 0;
         }
         uint256 finalPrice = product.paymentInfo.price;
         uint256 ratio = 0;
