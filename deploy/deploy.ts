@@ -7,6 +7,7 @@ async function main() {
 	);
 	const droplinkedWallet = '0x9CA686090b4c6892Bd76200e3fAA2EeC98f0528F';
 	const droplinkedFee = 100;
+	const skaleManager = '0x96af77653a28A4A9D96407698690aE9f9d225626';
 	console.log('[ 👾 ] Droplinked fee is set to 100');
 
 	console.log(`[ 👾 ] Starting deployment...`);
@@ -14,7 +15,7 @@ async function main() {
 	const DropShopDeployer = await ethers.getContractFactory('DropShopDeployer');
 	const deployer = await upgrades.deployProxy(
 		DropShopDeployer,
-		[droplinkedWallet, droplinkedFee],
+		[droplinkedWallet, droplinkedFee, skaleManager],
 		{ initializer: 'initialize' }
 	);
 	console.log('[ ✅ ] Deployer deployed to: ', await deployer.getAddress());
