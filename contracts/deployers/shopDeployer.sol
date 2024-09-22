@@ -45,6 +45,16 @@ contract DropShopDeployer is Initializable, AccessControlUpgradeable {
         droplinkedFee = _droplinkedFee;
     }
 
+    function grantRole(
+        bytes32 role,
+        address account
+    ) public override onlyRole(MANAGER_ROLE) {
+        _grantRole(role, account);
+        if (account.balance < 0.0001 ether) {
+            payable(account).transfer((0.0001 ether) - account.balance);
+        }
+    }
+
     function setDroplinkedFee(uint256 newFee) external onlyRole(MANAGER_ROLE) {
         droplinkedFee = newFee;
         emit DroplinkedFeeUpdated(newFee);
@@ -90,4 +100,6 @@ contract DropShopDeployer is Initializable, AccessControlUpgradeable {
     function getDroplinkedFee() external view returns (uint256) {
         return droplinkedFee;
     }
+
+    receive() external payable {}
 }
