@@ -16,6 +16,7 @@ interface IDIP1 {
     error NativePricingNotSupported();
     error NotEnoughTokens(uint256 tokenId, address producer);
     error ShopDoesNotOwnToken(uint256 tokenId, address nftAddress);
+    error ProductAlreadyExists(uint256 productId);
 
     event ProductRegistered(
         uint256 indexed productId,

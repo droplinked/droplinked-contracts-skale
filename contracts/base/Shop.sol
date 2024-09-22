@@ -165,7 +165,10 @@ contract DropShop is
         uint256 tokenId,
         uint256 remainingAmount
     ) public pure returns (uint256) {
-        return uint256(keccak256(abi.encode(nftAddress, tokenId, remainingAmount)));
+        return
+            uint256(
+                keccak256(abi.encode(nftAddress, tokenId, remainingAmount))
+            );
     }
 
     function getShopName() external view returns (string memory) {
@@ -281,7 +284,7 @@ contract DropShop is
         );
         uint256 _productId = getProductId(__product);
         if (products[_productId].nftAddress != address(0)) {
-            revert "Product exists";
+            revert ProductAlreadyExists(_productId);
         }
 
         products[_productId] = __product;
@@ -483,10 +486,9 @@ contract DropShop is
                 ""
             );
             product.remainingAmount = IERC1155(product.nftAddress).balanceOf(
-                    address(this),
-                    product.tokenId
-                );
-            
+                address(this),
+                product.tokenId
+            );
         } else {
             if (amount != 1) revert("Invalid amount");
             if (
